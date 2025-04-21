@@ -1,10 +1,13 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from pydantic import BaseModel
-import joblib
 import numpy as np
+import shutil
+
+from classifier import train_model, load_model, predict
+from s3_utils import upload_to_s3, download_from_s3
 
 # Load the trained model
-model = joblib.load("iris_model.pkl")
+model = load_model()
 
 # Define FastAPI app
 app = FastAPI(title="Iris Classifier API")
@@ -22,10 +25,27 @@ def read_root():
 
 @app.post("/predict")
 def predict_species(features: IrisFeatures):
-    input_data = np.array([[features.sepal_length,
-                            features.sepal_width,
-                            features.petal_length,
-                            features.petal_width]])
-    prediction = model.predict(input_data)[0]
-    species = ["setosa", "versicolor", "virginica"][prediction]
-    return {"prediction": species}
+    input_data = [
+        features.sepal_length,
+        features.sepal_width,
+        features.petal_length,
+        features.petal_width,
+    ]
+    prediction = predict(model, input_data)
+    return {"prediction": prediction}
+
+@app.post("/upload-data")
+def upload_data(file: UploadFile = File(...)):
+    file_location = "data.csv"
+    with open(file_location, "wb") as f:
+        shutil.copyfileobj(file.file, f)
+
+    upload_to_s3(file_location, "iris_data.csv")
+    return {"status": "Uploaded to S3"}
+
+@app.post("/retrain")
+def retrain():
+    download_from_s3("iris_data.csv", "latest.csv")
+    global model
+    model = train_model("latest.csv")
+    return {"status": "Model retrained from latest data in S3"}
