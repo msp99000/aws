@@ -63,7 +63,7 @@ def upload_to_s3(file_path: str, s3_key: str):
         # Configure Lambda notification if enabled
         if LAMBDA_NOTIFICATION and LAMBDA_FUNCTION_ARN:
             try:
-                configure_s3_lambda_trigger(BUCKET_NAME, LAMBDA_FUNCTION_ARN)
+                configure_s3_lambda_trigger(BUCKET_NAME, LAMBDA_FUNCTION_ARN) #type:ignore
                 print(f"✅ S3 Lambda trigger configured for bucket {BUCKET_NAME}")
             except Exception as e:
                 print(f"⚠️ Failed to configure Lambda trigger: {e}")
