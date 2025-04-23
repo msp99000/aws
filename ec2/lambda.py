@@ -1,6 +1,5 @@
 import json
 import urllib.parse
-import boto3
 import os
 import requests
 
