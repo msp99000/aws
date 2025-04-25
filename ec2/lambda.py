@@ -4,7 +4,7 @@ import os
 import requests
 
 # Configuration
-API_ENDPOINT = os.environ.get('API_ENDPOINT', 'http://your-fastapi-server:8000')
+API_ENDPOINT = os.environ.get('API_ENDPOINT', 'http://ec2-fastapi-server:8000')
 MODEL_TYPE = os.environ.get('MODEL_TYPE', 'random_forest')  # Default model type
 
 def lambda_handler(event, context):
